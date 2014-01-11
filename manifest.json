@@ -1,12 +1,15 @@
 {
-  "name": "Hello World!",
-  "description": "My first Chrome App.",
+  "name": "HistoryLearner",
+  "description": "Tsinghua University - final Machine Learning project",
   "version": "0.1",
   "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"]
+  },
   "permissions": [
     "history"
   ],
-    "browser_action": {
+  "browser_action": {
     "default_icon": "logo-128.png",
     "default_popup": "popup.html"
   },

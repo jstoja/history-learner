@@ -1,4 +1,8 @@
-(function (){
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('#learn').addEventListener('click', doLearn);
+});
+
+function doLearn() {
 	/*chrome.history.search({
 		'text': ''
 	}, function (historyArray) {
@@ -14,15 +18,7 @@
 			[0, 2, 0, 2, 4, 7],
 			[2, 0, 1, 1, 0, 3]
 		];
-
-	// function PositionsAndWords(position, occur) {
-	// 	this.position = position;
-	// 	this.nWords  = occur;
-	// }
-
-	/*
-	PositionsAndWords.prototype.'function' = function() {}
-	*/
+		
 	var nDocs = -1;
 	var nWords = -1;
 	var nTopics = 5;
@@ -47,7 +43,6 @@
 			i = 0;
 			for (var w = 0; w < nWords; ++w)
 				if (data[d][w] > 0)
-					//row[d][i++] = new PositionsAndWords(w, data[d][w]);
 					row[d][i++] = {
 						position: w,
 						nWords: data[d][w]
@@ -60,11 +55,9 @@
 		var pzd = [];
 		var pzw = [];
 		var pzdw = [];
+		
 		initVector(pz, pzd, pzw, pzdw);
-		/*for (var i = 0; i < pzw.length; ++i)
-			for (var j = 0; j < pzw[i].length; ++j)
-				console.log(pzw[i][j]);
-		return;*/
+		
 		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
 		var isEqualPz = true;
 		var isOccuredOnce = false;
@@ -223,4 +216,4 @@
 	function PrintResult(Pz_d, Pz_w, Pz) {
 		console.log(Pz);
 	}
-})();
+}
