@@ -121,7 +121,7 @@
 		for (var d = 0; d < nDocs; ++d) {
 			var counter = 0;
 			for (var pw = 0; pw < row[d].length; ++pw) {
-				var w = pw.position;
+				var w = row[d][pw].position;
 				var norm = 0.0;
 				for (var z = 0; z < nTopics; ++z) {
 					pzdw[z][d][counter] = pz[z] * pzd[z][d] * pzw[z][w];
