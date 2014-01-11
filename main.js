@@ -3,30 +3,58 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function doLearn() {
-	/*chrome.history.search({
-		'text': ''
-	}, function (historyArray) {
-		for (var i = historyArray.length - 1; i >= 0; i--) {
-			console.log(historyArray[i].title);
-		}
-	});*/
-	var data =
-		[
-			[9, 2, 1, 0, 0, 0],
-			[8, 3, 2, 1, 0, 0],
-			[0, 0, 3, 3, 4, 8],
-			[0, 2, 0, 2, 4, 7],
-			[2, 0, 1, 1, 0, 3]
-		];
-		
 	var nDocs = -1;
 	var nWords = -1;
 	var nTopics = 5;
 	var accuracy = 0.00001;
 
-	var row = [];
+	var row = [], wordsIndex = [];
+	
+	chrome.history.search({
+		'text': '',
+		'startTime': 0,
+		'maxResults': 1000
+	}, function (historyArray) {
+		console.log("Items in history: " + historyArray.length);
+		var reg = /\W/
+		
+		var invWordsIndex = [], actualIndex = 0;
+		var data = [];
+		for (var i = 0; i < historyArray.length; ++i) {
+			var words = historyArray[i].title.split(/\W/);
+			var existings = [];
 
-	doPLSI(data);
+			for (var j = 0; j < words.length; ++j) {
+				var word = words[j].trim().toLowerCase();
+				if (word.length == 0)
+					continue;
+				
+				if (invWordsIndex[word] === undefined) {
+					invWordsIndex[word] = actualIndex;
+					wordsIndex[actualIndex] = word;
+					++actualIndex;
+				}
+				wordIndex = invWordsIndex[word];
+				if (existings[wordIndex] === undefined)
+					existings[wordIndex] = 1;
+				else
+					existings[wordIndex] += 1;
+			}
+			data[i] = existings;
+		}
+		var realData = [];
+		for (var i = 0; i < data.length; ++i) {
+			realData[i] = [];
+			for (var j = 0; j < wordsIndex.length; ++j) {
+				if (data[i][j] === undefined)
+					realData[i][j] = 0;
+				else
+					realData[i][j] = data[i][j];
+			}
+		}
+		doPLSI(realData);
+	});
+
 	function doPLSI(data) {
 		nDocs = data.length;
 		if (nDocs <= 0)
@@ -81,9 +109,6 @@ function doLearn() {
 		}
 	}
 	
-	function inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce) {
-	}
-
 	function initVector(pz, pzd, pzw, pzdw) {
 		var iz = 1.0 / nTopics;
 		var norm;
@@ -214,6 +239,19 @@ function doLearn() {
 	}
 
 	function PrintResult(Pz_d, Pz_w, Pz) {
-		console.log(Pz);
+        for (var z = 0; z < nTopics; ++z)
+        {
+            console.log("Topic " + z + ":");
+			for (var i = 0; i < Pz_w[z].length; ++i) {
+				Pz_w[z][i] = { index: i, value: Pz_w[z][i] };
+			}
+			Pz_w[z].sort(function(a, b) {
+				return a.value - b.value;
+			});
+			Pz_w[z].reverse();
+			for (var i = 0; i < 10 && i < Pz_w[z].length; ++i) {
+				console.log(wordsIndex[Pz_w[z][i].index] + ": " + Pz_w[z][i].value);
+			}
+        }
 	}
 }
