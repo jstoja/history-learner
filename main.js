@@ -211,7 +211,7 @@
 				for (z = 0; z < nTopics; z++) {
 					sum += Pz[z] * Pz_d[z][d] * Pz_w[z][row[d].position];
 				}
-				L += row[d].nWords * Math.log(sum);
+				L += row[d].nWords * (Math.log(sum) / Math.LN10);
 			}
 		}
 		return (L);
