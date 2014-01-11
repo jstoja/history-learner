@@ -1,11 +1,11 @@
 (function (){
-	chrome.history.search({
+	/*chrome.history.search({
 		'text': ''
 	}, function (historyArray) {
 		for (var i = historyArray.length - 1; i >= 0; i--) {
 			console.log(historyArray[i].title);
 		}
-	});
+	});*/
 	var data =
 		[
 			[9, 2, 1, 0, 0, 0],
@@ -61,6 +61,10 @@
 		var pzw = [];
 		var pzdw = [];
 		initVector(pz, pzd, pzw, pzdw);
+		/*for (var i = 0; i < pzw.length; ++i)
+			for (var j = 0; j < pzw[i].length; ++j)
+				console.log(pzw[i][j]);
+		return;*/
 		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
 		var isEqualPz = true;
 		var isOccuredOnce = false;
@@ -109,7 +113,7 @@
 			norm = 0;
 			for (var w = 0; w < nWords; ++w) {
 				pzw[z][w] = Math.random();
-				norm += pzw[z][d];
+				norm += pzw[z][w];
 			}
 			for (var w = 0; w < nWords; ++w) {
 				pzw[z][w] /= norm;
