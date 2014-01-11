@@ -242,9 +242,8 @@ function doLearn() {
 	}
 
 	function PrintResult(Pz_d, Pz_w, Pz) {
-        for (var z = 0; z < nTopics; ++z)
-        {
-            console.log("Topic " + z + ":");
+	
+        for (var z = 0; z < nTopics; ++z) {
 			for (var i = 0; i < Pz_w[z].length; ++i) {
 				Pz_w[z][i] = { index: i, value: Pz_w[z][i] };
 			}
@@ -252,8 +251,30 @@ function doLearn() {
 				return a.value - b.value;
 			});
 			Pz_w[z].reverse();
-			for (var i = 0; i < 10 && i < Pz_w[z].length; ++i) {
-				console.log(wordsIndex[Pz_w[z][i].index] + ": " + Pz_w[z][i].value);
+		}
+		var finished = false;
+		var existings = [], iTopic = [], results = [];
+		for (var z = 0; z < nTopics; ++z) {
+			iTopic[z] = 0;
+			results[z] = [];
+		}
+		
+		for (var i = 0; finished == false; ++i) {
+			finished = true;
+			for (var z = 0; z < nTopics; ++z) {
+				if (existings[Pz_w[z][i].index] === undefined) {
+					existings[Pz_w[z][i].index] = true;
+					results[z][iTopic[z]] = Pz_w[z][i];
+					iTopic[z] += 1;
+				}
+				if (iTopic[z] < 10)
+					finished = false;
+			}
+		}
+        for (var z = 0; z < nTopics; ++z) {
+            console.log("Topic " + z + ":");
+			for (var i = 0; i < results[z].length; ++i) {
+				console.log(wordsIndex[results[z][i].index] + ": " + results[z][i].value);
 			}
         }
 	}
