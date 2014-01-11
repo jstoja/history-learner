@@ -1,119 +1,3 @@
-function PositionsAndWords(position, occur) {
-	this.position = position;
-	this.nWords  = occur;
-}
-/*
-PositionsAndWords.prototype.'function' = function() {}
-*/
-var nDocs = -1;
-var nWords = -1;
-var nTopics = 5;
-var accuracy = 0.00001;
-
-var row = [];
-
-function doPLSI(data) {
-	nDocs = data.length;
-	if (nDocs <= 0)
-		return;
-	nWords = data[0].length;
-	
-	initData(data);
-	EMSteps();
-}
-
-function initData(data) {
-	var i = 0;
-	for (var d = 0; d < nDocs; ++d) {
-		row[d] = [];
-		i = 0;
-		for (var w = 0; w < nWords; ++w)
-			if (data[d][w] > 0)
-				row[d][i++] = new PositionsAndWords(w, data[d][w]);
-	}
-}
-
-function EMSteps() {
-	var pz = [];
-	var pzd = [];
-	var pzw = [];
-	var pzdw = [];
-	
-	initVector(pz, pzd, pzw, pzdw);
-	var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
-	var isEqualPz = true;
-	var isOccuredOnce = false;
-	
-	while (true) {
-		estep(pz, pzd, pzw, pzdw);
-		mstep(pz, pzd, pzw, pzdw);
-		currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
-		console.log("Likelihood: " + currentLikelihood);
-		if (Math.abs(oldLikelihood / currentLikelihood - 1.0) < accuracy) {
-			if (!isOccuredOnce) {
-				isOccuredOnce = true;
-				isEqualPz = false;
-				console.log("Switch to unequal Pz");
-			} else {
-				break;
-			}
-		}
-		oldLikelihood = currentLikelihood;
-		console.log("Final likelihood: " + currentLikelihood);
-		PrintResult(pzd, pzw, pz);
-	}
-}
-
-function initVector(pz, pzd, pzw, pzdw) {
-	var iz = 1.0 / nTopics;
-	var norm;
-	
-	for (var z = 0; z < nTopics; ++z) {
-		pz[z] = iz;
-		pzd[z] = [];
-		pzw[z] = [];
-		pzdw[z] = [];
-		
-		norm = 0;
-		for (var d = 0; d < nDocs; ++d) {
-			pzdw[z][d] = [];
-			pzd[z][d] = Math.random();
-			norm += pzd[z][d];
-		}
-		for (var d = 0; d < nDocs; ++d) {
-			pzd[z][d] /= norm;
-		}
-		norm = 0;
-		for (var w = 0; w < nWords; ++w) {
-			pzw[z][w] = Math.random();
-			norm += pzw[z][d];
-		}
-		for (var w = 0; w < nWords; ++w) {
-			pzw[z][w] /= norm;
-		}
-	}
-	
-}
-
-function estep(pz, pzd, pzw, pzdw) {
-	for (var d = 0; d < nDocs; ++d) {
-		var counter = 0;
-		for (var pw = 0; pw < row[d].length; ++pw) {
-			var w = pw.position;
-			var norm = 0.0;
-			
-			for (var z = 0; z < nTopics; ++z) {
-				pzdw[z][d][counter] = pz[z] * pzd[z][d] * pzw[z][w];
-				norm += pzdw[z][d][counter];
-			}
-			for (var z = 0; z < nTopics; ++z) {
-				pzdw[z][d][counter] /= norm;
-			}
-			++counter;
-		}
-	}
-}
-
 (function (){
 	chrome.history.search({
 		'text': ''
@@ -121,8 +5,8 @@ function estep(pz, pzd, pzw, pzdw) {
 		for (var i = historyArray.length - 1; i >= 0; i--) {
 			console.log(historyArray[i].title);
 		}
-		
-		var data =
+	});
+	var data =
 		[
 			[9, 2, 1, 0, 0, 0],
 			[8, 3, 2, 1, 0, 0],
@@ -130,11 +14,124 @@ function estep(pz, pzd, pzw, pzdw) {
 			[0, 2, 0, 2, 4, 7],
 			[2, 0, 1, 1, 0, 3]
 		];
-		
-		doPLSI(data);
-	});
+	doPLSI(data);
 
-	function Mstep(Pz, Pz_d, Pz_w, Pz_dw, isEqualPz) {
+	// function PositionsAndWords(position, occur) {
+	// 	this.position = position;
+	// 	this.nWords  = occur;
+	// }
+
+	/*
+	PositionsAndWords.prototype.'function' = function() {}
+	*/
+	var nDocs = -1;
+	var nWords = -1;
+	var nTopics = 5;
+	var accuracy = 0.00001;
+
+	var row = [];
+
+	function doPLSI(data) {
+		nDocs = data.length;
+		if (nDocs <= 0)
+			return;
+		nWords = data[0].length;
+		initData(data);
+		EMSteps();
+	}
+
+	function initData(data) {
+		var i = 0;
+		for (var d = 0; d < nDocs; ++d) {
+			row[d] = [];
+			i = 0;
+			for (var w = 0; w < nWords; ++w)
+				if (data[d][w] > 0)
+					//row[d][i++] = new PositionsAndWords(w, data[d][w]);
+					row[d][i++] = {
+						position: w,
+						nWords: data[d][w]
+					};
+		}
+	}
+
+	function EMSteps() {
+		var pz = [];
+		var pzd = [];
+		var pzw = [];
+		var pzdw = [];
+		initVector(pz, pzd, pzw, pzdw);
+		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
+		var isEqualPz = true;
+		var isOccuredOnce = false;
+		while (true) {
+			estep(pz, pzd, pzw, pzdw);
+			mstep(pz, pzd, pzw, pzdw, isEqualPz);
+			currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
+			console.log("Likelihood: " + currentLikelihood);
+			if (Math.abs(oldLikelihood / currentLikelihood - 1.0) < accuracy) {
+				if (!isOccuredOnce) {
+					isOccuredOnce = true;
+					isEqualPz = false;
+					console.log("Switch to unequal Pz");
+				} else {
+					break;
+				}
+			}
+			oldLikelihood = currentLikelihood;
+			console.log("Final likelihood: " + currentLikelihood);
+			PrintResult(pzd, pzw, pz);
+		}
+	}
+
+	function initVector(pz, pzd, pzw, pzdw) {
+		var iz = 1.0 / nTopics;
+		var norm;
+		for (var z = 0; z < nTopics; ++z) {
+			pz[z] = iz;
+			pzd[z] = [];
+			pzw[z] = [];
+			pzdw[z] = [];
+			norm = 0;
+			for (var d = 0; d < nDocs; ++d) {
+				pzdw[z][d] = [];
+				pzd[z][d] = Math.random();
+				norm += pzd[z][d];
+			}
+			for (var d = 0; d < nDocs; ++d) {
+				pzd[z][d] /= norm;
+			}
+			norm = 0;
+			for (var w = 0; w < nWords; ++w) {
+				pzw[z][w] = Math.random();
+				norm += pzw[z][d];
+			}
+			for (var w = 0; w < nWords; ++w) {
+				pzw[z][w] /= norm;
+			}
+		}
+	}
+
+	function estep(pz, pzd, pzw, pzdw) {
+		for (var d = 0; d < nDocs; ++d) {
+			var counter = 0;
+			for (var pw = 0; pw < row[d].length; ++pw) {
+				var w = pw.position;
+				var norm = 0.0;
+				for (var z = 0; z < nTopics; ++z) {
+					pzdw[z][d][counter] = pz[z] * pzd[z][d] * pzw[z][w];
+					norm += pzdw[z][d][counter];
+				}
+				for (var z = 0; z < nTopics; ++z) {
+					pzdw[z][d][counter] /= norm;
+				}
+				++counter;
+			}
+		}
+		return (true);
+	}
+
+	function mstep(Pz, Pz_d, Pz_w, Pz_dw, isEqualPz) {
 		var z, w, d, i, counter, norm;
 		for (z = nTopics - 1; z >= 0; z--) {
 			for (w = nWords - 1; w >= 0; w--) {
