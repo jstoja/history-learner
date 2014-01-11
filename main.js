@@ -68,29 +68,27 @@
 		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
 		var isEqualPz = true;
 		var isOccuredOnce = false;
-		inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce);
+		while (true) {
+			estep(pz, pzd, pzw, pzdw);
+			mstep(pz, pzd, pzw, pzdw, isEqualPz);
+			currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
+			console.log("Likelihood: " + currentLikelihood);
+			if (Math.abs(oldLikelihood / currentLikelihood - 1.0) < accuracy) {
+				if (!isOccuredOnce) {
+					isOccuredOnce = true;
+					isEqualPz = false;
+					console.log("Switch to unequal Pz");
+				} else {
+					console.log("Final likelihood: " + currentLikelihood);
+					PrintResult(pzd, pzw, pz);
+					return true;
+				}
+			}
+			oldLikelihood = currentLikelihood;
+		}
 	}
 	
 	function inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce) {
-		estep(pz, pzd, pzw, pzdw);
-		mstep(pz, pzd, pzw, pzdw, isEqualPz);
-		currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
-		console.log("Likelihood: " + currentLikelihood);
-		if (Math.abs(oldLikelihood / currentLikelihood - 1.0) < accuracy) {
-			if (!isOccuredOnce) {
-				isOccuredOnce = true;
-				isEqualPz = false;
-				console.log("Switch to unequal Pz");
-			} else {
-				console.log("Final likelihood: " + currentLikelihood);
-				PrintResult(pzd, pzw, pz);
-				return;
-			}
-		}
-		oldLikelihood = currentLikelihood;
-		setInterval(function() {
-			inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce);
-		}, 1);
 	}
 
 	function initVector(pz, pzd, pzw, pzdw) {
@@ -151,7 +149,7 @@
 		for (z = nTopics - 1; z >= 0; z--) {
 			for (d = nDocs - 1; d >= 0; d--) {
 				for (i = 0, counter = 0; i < row[d].length; i++, counter++) {
-					Pz_d[z, row[d][i].position] += row[d][i].nWords * Pz_dw[z, d][counter];
+					Pz_w[z][row[d][i].position] += row[d][i].nWords * Pz_dw[z][d][counter];
 				}
 			}
 		}
@@ -172,9 +170,10 @@
 				Pz_d[z][d] = 0.0;
 				counter = 0;
 				for (i = 0; i < row[d].length; i++) {
-					Pz_d[z][d] += row[d][i].nWords * Pz_dw[z, d][counter];
+					Pz_d[z][d] += row[d][i].nWords * Pz_dw[z][d][counter];
 					counter++;
 				}
+				Pz[z] += Pz_d[z][d];
 			}
 		}
 
@@ -208,14 +207,14 @@
 		var norm, L, sum;
 		L = 0.0;
 
-		for (d = 0; i < nDocs; i++) {
+		for (d = 0; d < nDocs; d++) {
 			norm = 0.0;
 			for (var i = 0; i < row[d].length; i++) {
 				sum = 0.0;
 				for (z = 0; z < nTopics; z++) {
-					sum += Pz[z] * Pz_d[z][d] * Pz_w[z][row[d].position];
+					sum += Pz[z] * Pz_d[z][d] * Pz_w[z][row[d][i].position];
 				}
-				L += row[d].nWords * (Math.log(sum) / Math.LN10);
+				L += row[d][i].nWords * (Math.log(sum) / Math.LN10);
 			}
 		}
 		return (L);
