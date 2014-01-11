@@ -13,20 +13,20 @@ function doLearn() {
 	chrome.history.search({
 		'text': '',
 		'startTime': 0,
-		'maxResults': 1000
+		'maxResults': 9999
 	}, function (historyArray) {
 		console.log("Items in history: " + historyArray.length);
 		var reg = /\W/
 		
 		var invWordsIndex = [], actualIndex = 0;
 		var data = [];
-		for (var i = 0; i < historyArray.length; ++i) {
+		for (var i = 0, offset = 0; i < historyArray.length; ++i) {
 			var words = historyArray[i].title.split(/\W/);
 			var existings = [];
-
+			
 			for (var j = 0; j < words.length; ++j) {
 				var word = words[j].trim().toLowerCase();
-				if (word.length == 0)
+				if (word.length <= 3)
 					continue;
 				
 				if (invWordsIndex[word] === undefined) {
@@ -40,7 +40,10 @@ function doLearn() {
 				else
 					existings[wordIndex] += 1;
 			}
-			data[i] = existings;
+			if (existings.length >= 2) {
+				data[offset] = existings;
+				++offset;
+			}
 		}
 		var realData = [];
 		for (var i = 0; i < data.length; ++i) {
@@ -89,7 +92,7 @@ function doLearn() {
 		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
 		var isEqualPz = true;
 		var isOccuredOnce = false;
-		while (true) {
+		for (var actiter = 0; actiter < 5000; ++actiter) {
 			estep(pz, pzd, pzw, pzdw);
 			mstep(pz, pzd, pzw, pzdw, isEqualPz);
 			currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
