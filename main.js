@@ -14,7 +14,6 @@
 			[0, 2, 0, 2, 4, 7],
 			[2, 0, 1, 1, 0, 3]
 		];
-	doPLSI(data);
 
 	// function PositionsAndWords(position, occur) {
 	// 	this.position = position;
@@ -31,6 +30,7 @@
 
 	var row = [];
 
+	doPLSI(data);
 	function doPLSI(data) {
 		nDocs = data.length;
 		if (nDocs <= 0)
