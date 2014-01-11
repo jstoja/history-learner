@@ -64,24 +64,29 @@
 		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
 		var isEqualPz = true;
 		var isOccuredOnce = false;
-		while (true) {
-			estep(pz, pzd, pzw, pzdw);
-			mstep(pz, pzd, pzw, pzdw, isEqualPz);
-			currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
-			console.log("Likelihood: " + currentLikelihood);
-			if (Math.abs(oldLikelihood / currentLikelihood - 1.0) < accuracy) {
-				if (!isOccuredOnce) {
-					isOccuredOnce = true;
-					isEqualPz = false;
-					console.log("Switch to unequal Pz");
-				} else {
-					break;
-				}
+		inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce);
+	}
+	
+	function inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce) {
+		estep(pz, pzd, pzw, pzdw);
+		mstep(pz, pzd, pzw, pzdw, isEqualPz);
+		currentLikelihood = calcLoglikelihood(pz, pzd, pzw);
+		console.log("Likelihood: " + currentLikelihood);
+		if (Math.abs(oldLikelihood / currentLikelihood - 1.0) < accuracy) {
+			if (!isOccuredOnce) {
+				isOccuredOnce = true;
+				isEqualPz = false;
+				console.log("Switch to unequal Pz");
+			} else {
+				console.log("Final likelihood: " + currentLikelihood);
+				PrintResult(pzd, pzw, pz);
+				return;
 			}
-			oldLikelihood = currentLikelihood;
-			console.log("Final likelihood: " + currentLikelihood);
-			PrintResult(pzd, pzw, pz);
 		}
+		oldLikelihood = currentLikelihood;
+		setInterval(function() {
+			inner(pz, pzd, pzw, pzdw, currentLikelihood, oldLikelihood, isEqualPz, isOccuredOnce);
+		}, 1);
 	}
 
 	function initVector(pz, pzd, pzw, pzdw) {
