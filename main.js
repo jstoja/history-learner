@@ -1,6 +1,8 @@
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelector('#learn').addEventListener('click', doLearn);
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//   document.querySelector('#learn').addEventListener('click', doLearn);
+// });
+
+doLearn();
 
 function doLearn() {
 	var nDocs = -1;
@@ -9,26 +11,23 @@ function doLearn() {
 	var accuracy = 0.00001;
 
 	var row = [], wordsIndex = [];
-	
+
 	chrome.history.search({
 		'text': '',
 		'startTime': 0,
 		'maxResults': 9999
 	}, function (historyArray) {
 		console.log("Items in history: " + historyArray.length);
-		var reg = /\W/
-		
+		var reg = /\W/;
 		var invWordsIndex = [], actualIndex = 0;
 		var data = [];
 		for (var i = 0, offset = 0; i < historyArray.length; ++i) {
 			var words = historyArray[i].title.split(/\W/);
 			var existings = [];
-			
 			for (var j = 0; j < words.length; ++j) {
 				var word = words[j].trim().toLowerCase();
 				if (word.length <= 3)
 					continue;
-				
 				if (invWordsIndex[word] === undefined) {
 					invWordsIndex[word] = actualIndex;
 					wordsIndex[actualIndex] = word;
@@ -86,9 +85,9 @@ function doLearn() {
 		var pzd = [];
 		var pzw = [];
 		var pzdw = [];
-		
+
 		initVector(pz, pzd, pzw, pzdw);
-		
+
 		var oldLikelihood = calcLoglikelihood(pz, pzd, pzw), currentLikelihood;
 		var isEqualPz = true;
 		var isOccuredOnce = false;
@@ -111,7 +110,7 @@ function doLearn() {
 			oldLikelihood = currentLikelihood;
 		}
 	}
-	
+
 	function initVector(pz, pzd, pzw, pzdw) {
 		var iz = 1.0 / nTopics;
 		var norm;
@@ -242,8 +241,7 @@ function doLearn() {
 	}
 
 	function PrintResult(Pz_d, Pz_w, Pz) {
-	
-        for (var z = 0; z < nTopics; ++z) {
+		for (var z = 0; z < nTopics; ++z) {
 			for (var i = 0; i < Pz_w[z].length; ++i) {
 				Pz_w[z][i] = { index: i, value: Pz_w[z][i] };
 			}
@@ -271,11 +269,17 @@ function doLearn() {
 					finished = false;
 			}
 		}
-        for (var z = 0; z < nTopics; ++z) {
-            console.log("Topic " + z + ":");
+		htmlString = "<ol>";
+		for (var z = 0; z < nTopics; ++z) {
+			htmlString += "<li>Topic " + (z+1) + ":<ul>";
+			//console.log("Topic " + z + ":");
 			for (var i = 0; i < results[z].length; ++i) {
-				console.log(wordsIndex[results[z][i].index] + ": " + results[z][i].value);
+				htmlString += "<li>" + wordsIndex[results[z][i].index] + "</li>";
+				//console.log(wordsIndex[results[z][i].index] + ": " + results[z][i].value);
 			}
-        }
+			htmlString += "</ul></li>";
+		}
+		htmlString += "</ol>";
+		document.getElementById('results').innerHTML = htmlString;
 	}
 }
